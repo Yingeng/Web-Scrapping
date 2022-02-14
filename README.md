@@ -16,8 +16,10 @@ A simple web scrapping project that gets information from a website and store th
   - release date
   - genres
   - runtime
+  - movie URL
+  - Overview
 - For each selection, I will create a CSV file with the following format:
 ```
-Movie Name,User Rating,Genres,Trailer URL,Top Cast,Runtime,Certification,Release Date
-Spider-Man: No Way Home,84%,Action Adventure Science Fiction,https://www.themoviedb.org/movie/634649-spider-man-no-way-home#,Tom Holland Zendaya Benedict Cumberbatch Jacob Batalon Jon Favreau,2h 28m,PG-13,12/17/2021 (US)
+"Movie Name","User Rating","Genres","Trailer URL","Top Casts","Runtime","Certification","Release Date","Overview","Movie URL"
+"Spider-Man: No Way Home","NR","['Action', 'Adventure', 'Science Fiction']","https://www.youtube.com/watch?v=JfVOs4VSpmA","['Tom Holland', 'Zendaya', 'Benedict Cumberbatch', 'Jacob Batalon', 'Jon Favreau', 'Jamie Foxx', 'Willem Dafoe', 'Alfred Molina', 'Benedict Wong']","2h 28m","PG-13","12/17/2021 (US)","Peter Parker is unmasked and no longer able to separate his normal life from the high-stakes of being a super-hero. When he asks for help from Doctor Strange the stakes become even more dangerous, forcing him to discover what it truly means to be Spider-Man.","https://www.themoviedb.org/movie/634649"
 ```
