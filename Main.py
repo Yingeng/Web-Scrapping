@@ -4,25 +4,17 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import re
 
-needed_headers = {'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36"}
-website_url = ["https://www.themoviedb.org/movie", "https://www.themoviedb.org/movie/now-playing", "https://www.themoviedb.org/movie/upcoming"]
+needed_headers = {
+    'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36"}
+website_url = ["https://www.themoviedb.org/movie", "https://www.themoviedb.org/movie/now-playing",
+               "https://www.themoviedb.org/movie/upcoming"]
+filenames = ["popular_movies", "now_playing_movies", "upcoming_movies"]
 base_url = "https://www.themoviedb.org"
 base_youtube_url = "https://www.youtube.com/watch?v="
 
-movie_urls = [[], [], []]
-movie_names = [[], [], []]
-movie_user_ratings = [[], [], []]
-movie_top_casts = [[], [], []]
-movie_certifications = [[], [], []]
-movie_runtimes = [[], [], []]
-movie_trailer_urls = [[], [], []]
-movie_genres = [[], [], []]
-movie_release_dates = [[], [], []]
-movie_overviews = [[], [], []]
 
-
-def get_movie_info(url, selection):
-    movie_txt = requests.get(base_url+url, headers=needed_headers).text
+def get_movie_info(url):
+    movie_txt = requests.get(base_url + url, headers=needed_headers).text
     soup_movie = BeautifulSoup(movie_txt, "lxml")
     try:
         certification = soup_movie.find("span", class_="certification").text.strip()
@@ -51,53 +43,61 @@ def get_movie_info(url, selection):
     cast_cards = soup_movie.find_all("li", class_="card")
     for cast_card in cast_cards:
         casts.append(cast_card.contents[3].text.strip())
-    movie_certifications[selection].append(certification)
-    movie_release_dates[selection].append(release_date)
-    movie_trailer_urls[selection].append(trailer_url)
-    movie_genres[selection].append(genres)
-    movie_runtimes[selection].append(runtime)
-    movie_user_ratings[selection].append(rating)
-    movie_top_casts[selection].append(casts)
-    movie_overviews[selection].append(overview)
+    return certification, release_date, trailer_url, genres, runtime, rating, casts, overview
 
 
-def movie_selection(url, selection):
+def movie_selection(url, filename):
+    movie_urls = []
+    movie_names = []
+    movie_user_ratings = []
+    movie_top_casts = []
+    movie_certifications = []
+    movie_runtimes = []
+    movie_trailer_urls = []
+    movie_genres = []
+    movie_release_dates = []
+    movie_overviews = []
     html_txt = requests.get(url, headers=needed_headers).text
     soup = BeautifulSoup(html_txt, "lxml")
     movies = soup.find_all("a", class_="image")
     for movie in movies:
-        movie_urls[selection].append(base_url + movie["href"])
-        movie_names[selection].append(f'{movie["title"]}')
-        get_movie_info(movie["href"], selection)
+        movie_urls.append(base_url + movie["href"])
+        movie_names.append(f'{movie["title"]}')
+        movie_info = get_movie_info(movie["href"])
+        populate_list(movie_user_ratings, movie_top_casts, movie_certifications, movie_runtimes,
+                      movie_trailer_urls, movie_genres, movie_release_dates, movie_overviews, movie_info)
 
     movies_dict = {
-        "Movie Name": movie_names[selection],
-        "User Rating": movie_user_ratings[selection],
-        "Genres": movie_genres[selection],
-        "Trailer URL": movie_trailer_urls[selection],
-        "Top Casts": movie_top_casts[selection],
-        "Runtime": movie_runtimes[selection],
-        "Certification": movie_certifications[selection],
-        "Release Date": movie_release_dates[selection],
-        "Overview": movie_overviews[selection],
-        "Movie URL": movie_urls[selection],
+        "Movie Name": movie_names,
+        "User Rating": movie_user_ratings,
+        "Genres": movie_genres,
+        "Trailer URL": movie_trailer_urls,
+        "Top Casts": movie_top_casts,
+        "Runtime": movie_runtimes,
+        "Certification": movie_certifications,
+        "Release Date": movie_release_dates,
+        "Overview": movie_overviews,
+        "Movie URL": movie_urls,
     }
 
     movies_df = pd.DataFrame(movies_dict)
-    if selection == 0:
-        movies_df.to_csv("popular_movies.csv", quoting=csv.QUOTE_NONNUMERIC, escapechar="\\", doublequote=False,
-                         index=False)
-        print("Popular Movies Finished Processing!")
-    elif selection == 1:
-        movies_df.to_csv("now_playing_movies.csv", quoting=csv.QUOTE_NONNUMERIC, escapechar="\\", doublequote=False,
-                         index=False)
-        print("Current Playing Movies Finished Processing!")
-    else:
-        movies_df.to_csv("upcoming_movies.csv", quoting=csv.QUOTE_NONNUMERIC, escapechar="\\", doublequote=False,
-                         index=False)
-        print("Upcoming Movies Finished Processing!")
+    movies_df.to_csv(f"./CSVs/{filename}.csv", quoting=csv.QUOTE_NONNUMERIC, escapechar="\\", doublequote=False,
+                     index=False)
+    print(f"{filename}.csv Generated!")
+
+
+def populate_list(movie_user_ratings, movie_top_casts, movie_certifications, movie_runtimes,
+                  movie_trailer_urls, movie_genres, movie_release_dates, movie_overviews, movie_info):
+    movie_certifications.append(movie_info[0])
+    movie_release_dates.append(movie_info[1])
+    movie_trailer_urls.append(movie_info[2])
+    movie_genres.append(movie_info[3])
+    movie_runtimes.append(movie_info[4])
+    movie_user_ratings.append(movie_info[5])
+    movie_top_casts.append(movie_info[6])
+    movie_overviews.append(movie_info[7])
 
 
 if __name__ == "__main__":
     for i in range(3):
-        movie_selection(website_url[i], i)
+        movie_selection(website_url[i], filenames[i])
